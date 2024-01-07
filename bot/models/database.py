@@ -21,7 +21,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import inspect
+import os
 
-from .custom_bot import ZephyrzenBot
-from .module_base import ModuleBase
-from .database import Base, engine, Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, declared_attr, sessionmaker
+
+DB_USER = os.environ.get("DB_USER", "zephyrzen")
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "zephyrzen")
+DB_HOST = os.environ.get("DB_HOST", "localhost")
+DB_PORT = os.environ.get("DB_PORT", "3306")
+DB_NAME = os.environ.get("DB_NAME", "zephyrzen")
+
+engine = create_engine(
+    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
+
+Session = sessionmaker(engine, expire_on_commit=False)
+
+
+class Base(DeclarativeBase):
+    @declared_attr
+    def __tablename__(self):
+        file_path = inspect.getfile(self)
+        module_name = os.path.basename(os.path.dirname(file_path))
+        return f"{module_name.lower()}_{self.__name__.lower()}"
