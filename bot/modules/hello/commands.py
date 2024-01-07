@@ -24,13 +24,32 @@ SOFTWARE.
 
 import discord
 
-from bot.models import ZephyrzenBot, ModuleBase
+from bot.models import ZephyrzenBot, ModuleBase, Session
+from .tables import HelloTable
 
 
 class Hello(ModuleBase):
     @discord.application_command(name="hello", description="Say hello!")
     async def test(self, interaction: discord.ApplicationContext):
-        await interaction.response.send_message("Hello, world!")
+        with Session() as session:
+            current_user_hello = (
+                session.query(HelloTable).filter_by(name=interaction.user.name).first()
+            )
+
+            if current_user_hello:
+                current_user_hello.count += 1
+                session.commit()
+            else:
+                new_user_hello = HelloTable(name=interaction.user.name, count=1)
+                session.add(new_user_hello)
+                session.commit()
+
+        if not current_user_hello:
+            await interaction.response.send_message("Hello, world!")
+        else:
+            await interaction.response.send_message(
+                f"Hello, {interaction.user.name}! You've said hello {current_user_hello.count} times."
+            )
 
 
 def setup(bot: ZephyrzenBot):
