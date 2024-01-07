@@ -22,6 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .custom_bot import ZephyrzenBot
-from .module_base import ModuleBase
-from .database import Base, engine, Session
+from sqlalchemy import Column, Integer, String
+
+from bot.models import Base
+
+
+class HelloTable(Base):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+    count = Column(Integer)

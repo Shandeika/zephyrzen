@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 "py-cord" = "2.4.1"
+"sqlalchemy" = "2.0.25"
+"pymysql" = "1.1.0"
 
 [dev-packages]
 "black" = "23.12.1"
