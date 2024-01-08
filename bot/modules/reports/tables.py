@@ -22,7 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, DateTime, Text, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    BigInteger,
+    ForeignKey,
+    DateTime,
+    Text,
+    Boolean,
+)
 
 from bot.models import Base
 
