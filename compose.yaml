@@ -1,0 +1,47 @@
+x-bot-enviroment:
+  &bot-environment
+  DB_USER: "${DB_USER}"
+  DB_PASSWORD: "${DB_PASSWORD}"
+  DB_HOST: "zephyrzen-database"
+  DB_PORT: "3306"
+  DB_NAME: "${DB_NAME}"
+  DISCORD_TOKEN: "${DISCORD_TOKEN}"
+
+x-db-enviroment:
+  &database-environment
+  MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+  MYSQL_DATABASE: "${DB_NAME}"
+  MYSQL_USER: "${DB_USER}"
+  MYSQL_PASSWORD: "${DB_PASSWORD}"
+
+
+services:
+  zephyrzen-bot:
+    image: mrshandy/zephyrzen:latest
+    # Use this if you want to build a bot from source
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    environment: *bot-environment
+    depends_on:
+      - zephyrzen-database
+    networks:
+      - zephyrzen-net
+
+  zephyrzen-database:
+    image: mysql:latest
+    restart: unless-stopped
+    environment: *database-environment
+    volumes:
+      - zephyrzen-db-data:/var/lib/mysql
+    networks:
+      - zephyrzen-net
+    hostname: zephyrzen-database
+
+volumes:
+  zephyrzen-db-data:
+    name: zephyrzen-db-data
+
+networks:
+  zephyrzen-net:
