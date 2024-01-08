@@ -17,8 +17,8 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-COPY Pipfile Pipfile.lock /app/
-RUN pip install pipenv && pipenv install --system --deploy --ignore-pipfile
+COPY Pipfile Pipfile.lock wait-for-it.sh /app/
+RUN pip install pipenv && pipenv install --system --deploy --ignore-pipfile && chmod +x wait-for-it.sh
 
 USER appuser
 
