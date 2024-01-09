@@ -49,7 +49,7 @@ class Report(Base):
     photo_proof_url = Column(Text, nullable=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
-    status = Column(String(20), nullable=False, default="Open")
+    status = Column(String(20), nullable=False, default="Открыто")
 
 
 class Rule(Base):

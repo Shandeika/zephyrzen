@@ -33,6 +33,7 @@ from discord.ext import commands
 class ZephyrzenBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         intents = discord.Intents.default()
+        intents.members = True
         super().__init__(command_prefix="zep.", intents=intents, *args, **kwargs)
         self._logger = logging.getLogger(self.__class__.__name__)
 

@@ -32,6 +32,7 @@ from sqlalchemy import desc
 
 from bot.models import ZephyrzenBot, ModuleBase, Session
 from .tables import Report, Rule, Settings
+from .views import ReportsPaginator
 
 
 class Reports(ModuleBase):
@@ -80,7 +81,7 @@ class Reports(ModuleBase):
             judge: discord.PermissionOverwrite(view_channel=True),
         }
         channel = await ctx.guild.create_text_channel(
-            f"#{id} {code} | {applicant} - {defendant}",
+            f"{applicant.name}-{defendant.name}",
             topic=description,
             overwrites=overwrites,
             category=category,
@@ -164,7 +165,7 @@ class Reports(ModuleBase):
             last_id = s.query(Report).order_by(desc(Report.id)).first()
             channel_id = await self.create_channel(
                 ctx,
-                last_id + 1 if last_id is not None else 1,
+                last_id.id + 1 if last_id is not None else 1,
                 rule,
                 ctx.user,
                 user,
@@ -178,14 +179,15 @@ class Reports(ModuleBase):
                 defendant_discord_id=user.id,
                 judge_id=mod.id,
                 channel_id=channel_id,
-                title=f"",
+                title=f"{ctx.user.name} - {user.name}",
                 description=description,
                 rule=rule,
                 photo_proof_url=proof.url if proof is not None else None,
                 start_time=datetime.datetime.now(),
             )
+            s.add(report)
             try:
-                s.add(report)
+                s.commit()
                 embed = discord.Embed(
                     title="✅ Репорт успешно создан!", color=discord.Color.green()
                 )
@@ -200,14 +202,16 @@ class Reports(ModuleBase):
                 self._logger.error(traceback.format_exc())
 
     async def get_ticket(self, ctx: discord.AutocompleteContext):
-        if len(ctx.value) > 3:
-            with Session() as s:
+        with Session() as s:
+            if len(ctx.value) > 1:
                 return [
-                    f"{report.title} - {(await self._bot.fetch_user(report.applicant_discord_id)).name}"
+                    report.title[:99]
                     for report in s.query(Report)
                     .filter(Report.title.icontains(ctx.value))
                     .all()
                 ]
+            else:
+                return [report.title[:99] for report in s.query(Report).all()][:10]
 
     reports_group = discord.SlashCommandGroup(
         name="reports",
@@ -224,15 +228,48 @@ class Reports(ModuleBase):
         default=None,
     )
     @option("author", description="Автор нужного тикета.", required=False, default=None)
+    @option(
+        "only",
+        description="Выбор, только открытые репорты или только закрытые.",
+        choices=[
+            discord.OptionChoice(name="Открытые", value=1),
+            discord.OptionChoice(name="Закрытые", value=0),
+        ],
+    )
     @discord.default_permissions(manage_messages=True)
     @commands.guild_only()
     async def reports(
         self,
         ctx: discord.ApplicationContext,
+        only: int = None,
         search: str = None,
         author: discord.Member = None,
     ):
-        ...
+        with Session() as s:
+            if author is not None:
+                reports = (
+                    s.query(Report)
+                    .filter(Report.applicant_discord_id == author.id)
+                    .all()
+                )
+            elif search is not None:
+                reports = s.query(Report).filter(Report.title.icontains(search)).all()
+            elif search is None and author is None:
+                reports = s.query(Report).all()
+            for report in reports:
+                if only == 1 and report.status != "Открыто":
+                    reports.remove(report)
+                if only == 0 and report.status == "Открыто":
+                    reports.remove(report)
+            if len(reports) == 0:
+                embed = discord.Embed(
+                    title="Пока что здесь пусто...", color=discord.Color.dark_blue()
+                )
+                await ctx.respond(embed=embed, ephemeral=True)
+                return
+            reports.reverse()
+            paginator = ReportsPaginator(reports, ctx.interaction)
+            await paginator.respond(ctx.interaction, ephemeral=True)
 
     @discord.application_command(name="rule", description="Создать правило.")
     @option("code", description="Код правила.")
