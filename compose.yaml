@@ -17,11 +17,11 @@ x-db-enviroment:
 
 services:
   zephyrzen-bot:
-#    image: mrshandy/zephyrzen:latest
+    image: mrshandy/zephyrzen:latest
     # Use this if you want to build a bot from source
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
     restart: unless-stopped
     environment: *bot-environment
     depends_on:
@@ -38,8 +38,8 @@ services:
     networks:
       - zephyrzen-net
     hostname: zephyrzen-database
-    ports:
-      - 3306:3306
+#    ports:
+#      - 3306:3306
 
 volumes:
   zephyrzen-db-data:
