@@ -1,0 +1,2 @@
+class ZephyrzenError(Exception):
+    pass

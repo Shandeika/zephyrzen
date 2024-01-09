@@ -25,3 +25,4 @@ SOFTWARE.
 from .custom_bot import ZephyrzenBot
 from .module_base import ModuleBase
 from .database import Base, engine, Session
+from .errors import ZephyrzenError
