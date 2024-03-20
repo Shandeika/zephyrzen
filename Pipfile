@@ -10,7 +10,7 @@ name = "pypi"
 "cryptography" = "*"
 
 [dev-packages]
-"black" = "23.12.1"
+"black" = "24.3.0"
 
 [requires]
 python_version = "3.10"
